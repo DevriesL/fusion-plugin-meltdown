@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meltdown</title>
+    <link rel="stylesheet" href="static/chat.css">
+</head>
+<body>
+    <div id="chat-container">
+        <div id="messages" class="message-stream"></div>
+        <div id="typing-indicator" class="typing-indicator" style="display: none;">
+            <div class="typing-dots">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div id="input-area">
+            <div id="image-preview" style="display: none;">
+                <img id="preview-img" src="" alt="Preview">
+                <button id="remove-image" type="button" title="Remove image">&times;</button>
+            </div>
+            <div id="input-row">
+                <button id="upload-btn" type="button" title="Attach image (PNG, JPG, WebP)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+                    </svg>
+                </button>
+                <textarea id="user-input" rows="1"
+                    placeholder="Describe what you want to build..."
+                    autofocus></textarea>
+                <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp"
+                    style="display: none;">
+            </div>
+            <div id="autocomplete-dropdown" class="autocomplete-dropdown" style="display: none;"></div>
+            <div id="slash-dropdown" class="autocomplete-dropdown" style="display: none;"></div>
+        </div>
+    </div>
+    <div id="debug-handle" title="Drag to resize"></div>
+    <div id="debug-panel">
+        <div id="debug-toolbar">
+            <div id="debug-filters">
+                <button class="debug-filter-btn active" data-level="DEBUG">ALL</button>
+                <button class="debug-filter-btn" data-level="INFO">INFO</button>
+                <button class="debug-filter-btn" data-level="WARN">WARN</button>
+                <button class="debug-filter-btn" data-level="ERROR">ERROR</button>
+            </div>
+            <div id="debug-actions">
+                <button id="debug-scroll-btn" title="Scroll to bottom">&#x2193;</button>
+                <button id="debug-clear-btn" title="Clear log">CLR</button>
+                <button id="debug-close-btn" title="Close panel">&#x2715;</button>
+            </div>
+        </div>
+        <div id="debug-log-entries"></div>
+    </div>
+    <div id="config-overlay" style="display: none;">
+        <div class="config-header">
+            <button id="config-back" type="button" title="Back to chat">&#x2190;</button>
+            <span class="config-title">Settings</span>
+        </div>
+        <div class="config-body">
+            <div class="config-section">
+                <h3>AI Provider</h3>
+                <div class="config-field">
+                    <label for="cfg-provider">Provider</label>
+                    <select id="cfg-provider">
+                        <option value="gemini">Gemini (Google)</option>
+                        <option value="claude">Claude (Anthropic)</option>
+                        <option value="openai">GPT (OpenAI)</option>
+                    </select>
+                </div>
+                <div class="config-field">
+                    <label for="cfg-model-name">Model Name</label>
+                    <input type="text" id="cfg-model-name" placeholder="e.g. gemini-3.1-pro-preview" autocomplete="off">
+                    <div class="field-hint">Enter the exact model identifier for your provider</div>
+                    <div class="field-error"></div>
+                </div>
+            </div>
+            <div class="config-section">
+                <h3>API Keys</h3>
+                <div class="config-field" id="field-api-key-gemini">
+                    <label for="cfg-api-key-gemini">Gemini API Key</label>
+                    <input type="password" id="cfg-api-key-gemini" placeholder="Enter your Gemini API key" autocomplete="off">
+                    <div class="field-error"></div>
+                </div>
+                <div class="config-field" id="field-api-key-claude">
+                    <label for="cfg-api-key-claude">Claude API Key</label>
+                    <input type="password" id="cfg-api-key-claude" placeholder="Enter your Anthropic API key" autocomplete="off">
+                    <div class="field-error"></div>
+                </div>
+                <div class="config-field" id="field-api-key-openai">
+                    <label for="cfg-api-key-openai">OpenAI API Key</label>
+                    <input type="password" id="cfg-api-key-openai" placeholder="Enter your OpenAI API key" autocomplete="off">
+                    <div class="field-error"></div>
+                </div>
+            </div>
+            <div class="config-section">
+                <h3>Agent</h3>
+                <div class="config-field" id="field-max-iterations">
+                    <label for="cfg-max-iterations">Max Visual Iterations</label>
+                    <input type="number" id="cfg-max-iterations" min="1" max="50" step="1">
+                    <div class="field-error"></div>
+                </div>
+                <div class="config-field" id="field-timeout">
+                    <label for="cfg-timeout">Agent Timeout (seconds)</label>
+                    <input type="number" id="cfg-timeout" min="10" max="300" step="1">
+                    <div class="field-error"></div>
+                </div>
+                <div class="config-field" id="field-debug">
+                    <label class="config-checkbox-label">
+                        <input type="checkbox" id="cfg-debug">
+                        <span>Debug Mode</span>
+                    </label>
+                </div>
+            </div>
+            <div class="config-section">
+                <h3>Viewport</h3>
+                <div class="config-field" id="field-viewport-width">
+                    <label for="cfg-viewport-width">Capture Width (px)</label>
+                    <input type="number" id="cfg-viewport-width" min="640" max="3840" step="1">
+                    <div class="field-error"></div>
+                </div>
+                <div class="config-field" id="field-viewport-height">
+                    <label for="cfg-viewport-height">Capture Height (px)</label>
+                    <input type="number" id="cfg-viewport-height" min="480" max="2160" step="1">
+                    <div class="field-error"></div>
+                </div>
+            </div>
+        </div>
+        <div class="config-footer">
+            <button id="config-cancel" type="button">Discard Changes</button>
+            <button id="config-save" type="button" disabled>Save Settings</button>
+        </div>
+    </div>
+    <div id="history-overlay" style="display: none;">
+        <div class="config-header">
+            <button id="history-back" type="button" title="Back to chat">&#x2190;</button>
+            <span class="config-title">Session History</span>
+        </div>
+        <div class="history-body">
+            <div id="history-list"></div>
+            <div id="history-empty" style="display: none;">
+                <p>No saved sessions yet.</p>
+            </div>
+        </div>
+    </div>
+    <script src="static/chat.js"></script>
+</body>
+</html>

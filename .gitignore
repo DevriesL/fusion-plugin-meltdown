@@ -1,0 +1,25 @@
+# Vendored Python dependencies (auto-installed on first run)
+meltdown/lib/*
+!meltdown/lib/fusionAddInUtils
+!meltdown/lib/fusionAddInUtils/**
+
+# API key secrets
+meltdown/.secrets
+
+# User settings
+meltdown/.settings
+
+# Session storage
+meltdown/.sessions/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

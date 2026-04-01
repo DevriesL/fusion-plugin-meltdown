@@ -1,0 +1,797 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    background-color: #ffffff;
+    color: #1a1a1a;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#chat-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 100px;
+}
+
+/* Scrollable message stream */
+.message-stream {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Message bubbles (D-01) */
+.message {
+    max-width: 85%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.message.user {
+    align-self: flex-end;
+    background-color: #0078d4;
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+}
+
+.message.assistant {
+    align-self: flex-start;
+    background-color: #f0f0f0;
+    color: #1a1a1a;
+    border-bottom-left-radius: 4px;
+}
+
+.message.system {
+    align-self: center;
+    background-color: transparent;
+    color: #666666;
+    font-style: italic;
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+/* Typing indicator (D-14) */
+.typing-indicator {
+    padding: 4px 12px;
+}
+
+.typing-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    background-color: #f0f0f0;
+    border-radius: 12px;
+    border-bottom-left-radius: 4px;
+}
+
+.typing-dots span {
+    width: 6px;
+    height: 6px;
+    background-color: #999999;
+    border-radius: 50%;
+    animation: typing-bounce 1.4s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) { animation-delay: 0s; }
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* Input area (D-03) */
+#input-area {
+    padding: 8px 12px;
+    border-top: 1px solid #e0e0e0;
+    background-color: #fafafa;
+    position: relative; /* for autocomplete dropdown positioning */
+}
+
+#user-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    overflow-y: auto;
+    max-height: 96px; /* ~4 lines */
+    background-color: #ffffff;
+    color: #1a1a1a;
+}
+
+#user-input:focus {
+    border-color: #0078d4;
+    box-shadow: 0 0 0 1px #0078d4;
+}
+
+#user-input::placeholder {
+    color: #999999;
+}
+
+/* Phase 4: Input row with upload button */
+#input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+#input-row #user-input {
+    flex: 1;
+}
+
+#upload-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #666666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+#upload-btn:hover {
+    background-color: #f0f0f0;
+    color: #333333;
+    border-color: #0078d4;
+}
+
+/* Image preview before sending (D-10) */
+#image-preview {
+    position: relative;
+    padding: 4px 0 4px 38px; /* left padding aligns with textarea (btn width + gap) */
+}
+
+#image-preview img {
+    max-width: 120px;
+    max-height: 80px;
+    border-radius: 6px;
+    border: 1px solid #d0d0d0;
+    object-fit: cover;
+}
+
+#remove-image {
+    position: absolute;
+    top: 0;
+    left: 38px; /* aligns with preview image */
+    transform: translate(80px, -4px);
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 50%;
+    background: #666666;
+    color: #ffffff;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#remove-image:hover {
+    background: #cc0000;
+}
+
+/* Image thumbnails in message bubbles (D-10) */
+.message img.msg-image {
+    max-width: 200px;
+    max-height: 150px;
+    border-radius: 6px;
+    margin-top: 4px;
+    display: block;
+    object-fit: cover;
+}
+
+/* Autocomplete dropdown (D-18) */
+.autocomplete-dropdown {
+    position: absolute;
+    bottom: 100%;
+    left: 38px; /* aligns with textarea */
+    right: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    margin-bottom: 4px;
+}
+
+.autocomplete-item {
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #333333;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.selected {
+    background-color: #e8f0fe;
+    color: #0078d4;
+}
+
+.autocomplete-item .ac-label {
+    font-weight: 600;
+}
+
+.autocomplete-item .ac-type {
+    font-size: 11px;
+    color: #888888;
+    margin-left: 6px;
+}
+
+/* Slash command dropdown (D-01, SLSH-01) */
+#slash-dropdown {
+    left: 12px;
+    right: 12px;
+}
+
+/* Config overlay (D-05, CONF-01) */
+#config-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #ffffff;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+}
+
+.config-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#config-back {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #666666;
+    padding: 0;
+}
+
+#config-back:hover {
+    color: #0078d4;
+}
+
+.config-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.config-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.config-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.config-section {
+    margin-bottom: 16px;
+}
+
+.config-section h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333333;
+    margin-bottom: 8px;
+}
+
+.config-field {
+    margin-bottom: 16px;
+}
+
+.config-field label {
+    display: block;
+    font-size: 12px;
+    color: #666666;
+    margin-bottom: 4px;
+}
+
+.config-field input[type="number"],
+.config-field input[type="text"],
+.config-field input[type="password"],
+.config-field select {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    background: #ffffff;
+}
+
+.field-hint {
+    font-size: 11px;
+    color: #888888;
+    margin-top: 2px;
+}
+
+.config-field input:focus {
+    border-color: #0078d4;
+    box-shadow: 0 0 0 1px #0078d4;
+    outline: none;
+}
+
+.config-field .field-error {
+    color: #cc0000;
+    font-size: 11px;
+    margin-top: 2px;
+    display: none;
+}
+
+.config-field.invalid input {
+    border-color: #cc0000;
+}
+
+.config-field.invalid .field-error {
+    display: block;
+}
+
+.config-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #1a1a1a;
+    cursor: pointer;
+}
+
+.config-checkbox-label input[type="checkbox"] {
+    width: auto;
+}
+
+#config-save {
+    background: #0078d4;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+#config-save:hover {
+    background: #006abc;
+}
+
+#config-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#config-cancel {
+    background: transparent;
+    color: #666666;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+#config-cancel:hover {
+    background: #f0f0f0;
+}
+
+/* ******** Narration text segments (Phase 7) ******** */
+.narration-text {
+    margin-bottom: 2px;
+}
+
+.narration-text:last-child {
+    margin-bottom: 0;
+}
+
+/* ******** Tool card styles (TOOL-01, TOOL-02, TOOL-03, TOOL-04) ******** */
+.tool-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    margin: 4px 0;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid #e0e0e0;
+    background: #fafafa;
+    transition: background-color 0.15s;
+    white-space: normal;
+}
+
+.tool-card:hover {
+    background: #f0f0f0;
+}
+
+.tool-card.running {
+    border-color: #e0c050;
+    background: #fffbea;
+}
+
+.tool-card.success {
+    border-color: #c0e0c0;
+    background: #f0faf0;
+}
+
+.tool-card.error {
+    border-color: #e0c0c0;
+    background: #faf0f0;
+}
+
+.tool-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.tool-name {
+    font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+    font-weight: 500;
+}
+
+.tool-duration {
+    color: #888888;
+    font-size: 11px;
+    margin-left: 2px;
+}
+
+/* Tool card expanded state (D-05, D-06) */
+.tool-card:has(.tool-card-details) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.tool-card-details {
+    width: 100%;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #e0e0e0;
+    font-size: 12px;
+}
+
+.tool-detail-section {
+    margin-bottom: 6px;
+}
+
+.tool-detail-label {
+    font-weight: 600;
+    color: #555555;
+    font-size: 11px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.tool-detail-content {
+    font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+    font-size: 11px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: #333333;
+}
+
+.tool-detail-error {
+    color: #cc0000;
+}
+
+.tool-param {
+    line-height: 1.6;
+}
+
+.tool-param-key {
+    color: #0078d4;
+}
+
+.tool-param-value {
+    color: #333333;
+}
+
+/* ******** Debug panel styles (DBUG-01, DBUG-02, DBUG-03, DBUG-04) ******** */
+
+#debug-handle {
+    display: none;
+    height: 4px;
+    background: #e0e0e0;
+    cursor: ns-resize;
+    flex-shrink: 0;
+}
+
+#debug-handle:hover, #debug-handle.dragging {
+    background: #0078d4;
+}
+
+#debug-handle.visible {
+    display: block;
+}
+
+#debug-panel {
+    display: none;
+    flex-direction: column;
+    height: 40vh;
+    min-height: 80px;
+    border-top: 1px solid #e0e0e0;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+    font-size: 11px;
+}
+
+#debug-panel.visible {
+    display: flex;
+}
+
+#debug-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    background: #252526;
+    border-bottom: 1px solid #3c3c3c;
+    flex-shrink: 0;
+}
+
+#debug-filters {
+    display: flex;
+    gap: 2px;
+}
+
+.debug-filter-btn {
+    padding: 2px 8px;
+    border: 1px solid #3c3c3c;
+    border-radius: 3px;
+    background: transparent;
+    color: #999999;
+    font-size: 10px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.debug-filter-btn:hover {
+    background: #333333;
+    color: #d4d4d4;
+}
+
+.debug-filter-btn.active {
+    background: #0078d4;
+    color: #ffffff;
+    border-color: #0078d4;
+}
+
+#debug-actions {
+    display: flex;
+    gap: 4px;
+}
+
+#debug-actions button {
+    padding: 2px 6px;
+    border: 1px solid #3c3c3c;
+    border-radius: 3px;
+    background: transparent;
+    color: #999999;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+#debug-actions button:hover {
+    background: #333333;
+    color: #d4d4d4;
+}
+
+#debug-log-entries {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 8px;
+}
+
+.log-entry {
+    padding: 1px 0;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.log-entry .log-ts {
+    color: #6a9955;
+    margin-right: 6px;
+}
+
+.log-entry .log-level {
+    font-weight: 600;
+    margin-right: 6px;
+    min-width: 40px;
+    display: inline-block;
+}
+
+.log-entry .log-src {
+    color: #569cd6;
+    margin-right: 6px;
+}
+
+.log-entry .log-msg {
+    color: #d4d4d4;
+}
+
+/* Level-specific colors (per D-10 discretion) */
+.log-entry.level-DEBUG .log-level { color: #808080; }
+.log-entry.level-INFO .log-level { color: #569cd6; }
+.log-entry.level-WARN .log-level { color: #ce9178; }
+.log-entry.level-ERROR .log-level { color: #f44747; }
+.log-entry.level-ERROR .log-msg { color: #f44747; }
+
+/* CSS-based level filtering (per Research "Don't Hand-Roll" guidance) */
+/* Default: show all (filter-DEBUG class on container) */
+/* When filter-INFO: hide DEBUG entries */
+#debug-log-entries.filter-INFO .log-entry.level-DEBUG { display: none; }
+/* When filter-WARN: hide DEBUG and INFO */
+#debug-log-entries.filter-WARN .log-entry.level-DEBUG,
+#debug-log-entries.filter-WARN .log-entry.level-INFO { display: none; }
+/* When filter-ERROR: hide everything except ERROR */
+#debug-log-entries.filter-ERROR .log-entry.level-DEBUG,
+#debug-log-entries.filter-ERROR .log-entry.level-INFO,
+#debug-log-entries.filter-ERROR .log-entry.level-WARN { display: none; }
+
+/* Scroll-to-bottom button visibility */
+#debug-scroll-btn { display: none; }
+#debug-scroll-btn.visible { display: inline-block; }
+
+/* ******** History overlay (SESS-02, D-01, D-02, D-11) ******** */
+
+#history-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #ffffff;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+}
+
+#history-back {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #666666;
+    padding: 0;
+}
+
+#history-back:hover {
+    color: #0078d4;
+}
+
+.history-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+#history-empty {
+    text-align: center;
+    color: #888888;
+    padding: 40px 16px;
+    font-size: 13px;
+}
+
+.session-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background-color 0.15s;
+}
+
+.session-card:hover {
+    border-color: #0078d4;
+    background-color: #f5f9ff;
+}
+
+.session-card.current {
+    border-color: #0078d4;
+    background-color: #f0f6ff;
+}
+
+.session-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.session-card-time {
+    font-size: 11px;
+    color: #888888;
+}
+
+.session-card-badge {
+    font-size: 10px;
+    color: #0078d4;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.session-card-preview {
+    font-size: 12px;
+    color: #555555;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.session-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2px;
+}
+
+.session-delete-btn {
+    border: none;
+    background: none;
+    color: #cc0000;
+    cursor: pointer;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.session-card:hover .session-delete-btn {
+    opacity: 0.6;
+}
+
+.session-delete-btn:hover {
+    opacity: 1 !important;
+    background-color: #ffeeee;
+}
